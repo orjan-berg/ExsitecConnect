@@ -23,15 +23,15 @@ function Write-LogMessage {
 
 $IIS = Get-WindowsFeature -ComputerName $Server -Name Web-Server
 if ($IIS.Installed) {
-    Write-Output 'IIS er installert!'
+    Write-LogMessage 'IIS er installert!'
 } else {
-    Write-Output 'IIS er ikke installert, installerer nå...'
+    Write-LogMessage 'IIS er ikke installert, installerer nå...'
     Install-WindowsFeature -Name Web-Server -IncludeManagementTools -ComputerName $Server -Restart
 }
 
-Write-Output 'Installerer nødvendige roles and features...'
+Write-LogMessage 'Installerer nødvendige roles and features...'
 Install-WindowsFeature -ConfigurationFilePath $DeploymentPath -ComputerName $Server -Restart -Verbose
-Write-Output 'Ferdig!'
+Write-LogMessage 'Ferdig!'
 
 # Import modules
 Import-Module IISAdministration
@@ -40,31 +40,32 @@ Import-Module WebAdministration
 
 # site mappe
 if (Test-Path $SitePath\$appPoolName) {
-    'Site mappe er opprettet fra før'
+    Write-LogMessage 'Site mappe er opprettet fra før'
 } else {
-    'Site mappe er ikke opprettet'
-    'Lager ny Site mappe'
+    Write-LogMessage 'Site mappe er ikke opprettet'
+    Write-LogMessage 'Lager ny Site mappe'
     New-Item -ItemType Directory -Path $SitePath -Name $appPoolName
 }
 
 # Application pool
 
 if (Test-Path IIS:\AppPools\$appPoolName) {
-    'AppPool er opprettet fra før'
+    Write-LogMessage 'AppPool er opprettet fra før'
 } else {
-    'AppPool er ikke opprettet'
-    'Lager ny AppPool'
+    Write-LogMessage 'AppPool er ikke opprettet'
+    Write-LogMessage 'Lager ny AppPool'
     New-WebAppPool -Name $appPoolName
     Set-ItemProperty -Path IIS:\AppPools\$appPoolName managedRunTimeVersion 'V4.0'
     Set-ItemProperty -Path IIS:\AppPools\$appPoolName enable32BitAppOnWin64 'True'
 }
 
 # new website
-
+Write-LogMessage 'Start-IISCommitDelay'
 Start-IISCommitDelay
 $TestSite = New-IISSite -Name $appPoolName -BindingInformation '*:8082:' -PhysicalPath $SitePath\$appPoolName -Passthru
 $TestSite.Applications['/'].ApplicationPoolName = $appPoolName
 Stop-IISCommitDelay
+Write-LogMessage 'Stop-IISCommitDelay'
 
 # Application pool user
 
@@ -72,13 +73,13 @@ $Acl = Get-Acl $SitePath\$appPoolName
 $Ar = New-Object System.Security.AccessControl.FileSystemAccessRule($User, 'Modify', 'ContainerInherit,ObjectInherit', 'None', 'Allow')
 $Acl.SetAccessRule($Ar)
 Set-Acl $SitePath\$appPoolName $Acl
-Write-Output('Application pool bruker er opprettet')
+Write-LogMessage('Application pool bruker er opprettet')
 
-Write-Output('Jobb utført!')
+Write-LogMessage('Jobb utført!')
 
 $connection = Test-NetConnection -ComputerName $vbs_server -Port $vbs_port -Verbose
 if ( $connection.TcpTestSucceeded) { 
-    Write-Host 'Connection to VBS is OK!'
+    Write-LogMessage 'Connection to VBS is OK!'
 } else {
-    Write-Host 'Connection to VBS is NOT ok!'
+    Write-LogMessage 'Connection to VBS is NOT ok!'
 }
