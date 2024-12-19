@@ -90,3 +90,20 @@ if ( $connection.TcpTestSucceeded) {
 } else {
     Write-LogMessage 'Connection to VBS is NOT ok!'
 }
+
+$RequiredFeatures = Import-Csv -Path 'I:\ExsitecConnect\FeaturesToInstall.csv'
+
+$WindowsFeatures = Get-WindowsFeature -ComputerName 192.168.50.47 -Credential (Get-Credential) -Name Web-*, Net-*
+
+# Funksjon for å sjekke og installere manglende funksjoner
+foreach ($feature in $RequiredFeatures) {
+    $isInstalled = $WindowsFeatures | Where-Object { $_.Name -eq $feature -and $_.Installed -eq $true }
+
+    if (-not $isInstalled) {
+        Write-Host "Funksjonen $feature er ikke installert. Forsøker å installere..."
+        Install-WindowsFeature -Name $feature -IncludeManagementTools -ErrorAction Stop
+        Write-Host "Funksjonen $feature ble installert."
+    } else {
+        Write-Host "Funksjonen $feature er allerede installert."
+    }
+}
