@@ -1,13 +1,13 @@
 $vbs_server = '192.168.50.45'
 $vbs_port = 2001
 $Server = $env:COMPUTERNAME
-$DeploymentPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecConnect/a9c2f208f6bd41d7c4ce1c8614596f982fb16359/DeploymentConfigTemplate.xml'
+$DeploymentConfigPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecConnect/a9c2f208f6bd41d7c4ce1c8614596f982fb16359/DeploymentConfigTemplate.xml'
 $appPoolName = 'ExsitecConnect'
 $SitePath = 'c:\inetpub'
 $User = 'IIS AppPool\ExsitecConnect'
 
 # Define the log file path
-$logFilePath = "$PSScriptRoot\logfile.log"
+$logFilePath = '.\logfile.log'
 
 # Function to log messages to a file
 function Write-LogMessage {
@@ -18,6 +18,13 @@ function Write-LogMessage {
     $logEntry = "$timestamp - $Message"
     Add-Content -Path $logFilePath -Value $logEntry
 }
+
+Write-LogMessage 'Laster ned DeploymentConfigTemplate.xml'
+$DeploymentConfigFile = Invoke-WebRequest $DeploymentConfigPath
+$DeploymentConfigFile.Content | Out-File '.\DeploymentConfigTemplate.xml'
+Write-LogMessage 'Nedlasting utført'
+$DeploymentPath = '.\DeploymentConfigTemplate.xml'
+
 
 # windows features and roles
 
