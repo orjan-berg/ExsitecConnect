@@ -6,6 +6,19 @@ $appPoolName = 'ExsitecConnect'
 $SitePath = 'c:\inetpub'
 $User = 'IIS AppPool\ExsitecConnect'
 
+# Define the log file path
+$logFilePath = "$PSScriptRoot\logfile.log"
+
+# Function to log messages to a file
+function Write-LogMessage {
+    param (
+        [string]$Message
+    )
+    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $logEntry = "$timestamp - $Message"
+    Add-Content -Path $logFilePath -Value $logEntry
+}
+
 # windows features and roles
 
 $IIS = Get-WindowsFeature -ComputerName $Server -Name Web-Server
