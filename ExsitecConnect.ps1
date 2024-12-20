@@ -2,6 +2,7 @@ $vbs_server = '192.168.50.45'
 $vbs_port = 2001
 $Server = $env:COMPUTERNAME
 $DeploymentConfigPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecConnect/a9c2f208f6bd41d7c4ce1c8614596f982fb16359/DeploymentConfigTemplate.xml'
+$FeaturesToInstallPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecConnect/refs/heads/main/FeaturesToInstall.csv'
 $appPoolName = 'ExsitecConnect'
 $SitePath = 'c:\inetpub'
 $User = 'IIS AppPool\ExsitecConnect'
@@ -22,8 +23,14 @@ function Write-LogMessage {
 Write-LogMessage 'Laster ned DeploymentConfigTemplate.xml'
 $DeploymentConfigFile = Invoke-WebRequest $DeploymentConfigPath
 $DeploymentConfigFile.Content | Out-File '.\DeploymentConfigTemplate.xml'
-Write-LogMessage 'Nedlasting utført'
+Write-LogMessage 'Nedlasting fullført'
 $DeploymentPath = '.\DeploymentConfigTemplate.xml'
+
+Write-LogMessage 'Laster ned FeaturesToInstall.csv'
+$FeaturesToInstallFile = Invoke-WebRequest $FeaturesToInstallPath
+$FeaturesToInstallFile.Content | Out-File '.\FeaturesToInstall.csv'
+Write-LogMessage 'Nedlasting fullført'
+
 
 
 # windows features and roles
@@ -93,7 +100,7 @@ if ( $connection.TcpTestSucceeded) {
 
 $RequiredFeatures = Import-Csv -Path 'I:\ExsitecConnect\FeaturesToInstall.csv'
 
-$WindowsFeatures = Get-WindowsFeature -ComputerName 192.168.50.47 -Credential (Get-Credential) -Name Web-*, Net-*
+$WindowsFeatures = Get-WindowsFeature -ComputerName $Server -Credential (Get-Credential) -Name Web-*, Net-*
 
 # Funksjon for å sjekke og installere manglende funksjoner
 foreach ($feature in $RequiredFeatures) {
