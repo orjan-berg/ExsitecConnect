@@ -5,6 +5,7 @@ $FeaturesToInstallPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecCo
 $appPoolName = 'ExsitecConnect'
 $SitePath = 'c:\inetpub'
 $User = 'IIS AppPool\ExsitecConnect'
+$RequiredFeatures = @()
 
 # Define the log file path
 $logFilePath = '.\logfile.log'
@@ -38,6 +39,8 @@ if ($IIS.Installed) {
 }
 
 $RequiredFeatures = Import-Csv -Path '.\FeaturesToInstall.csv'
+
+
 
 $WindowsFeatures = Get-WindowsFeature -Name Web-*, Net-*
 
