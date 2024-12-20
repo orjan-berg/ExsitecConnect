@@ -39,7 +39,7 @@ if ($IIS.Installed) {
 
 $RequiredFeatures = Import-Csv -Path '.\FeaturesToInstall.csv'
 
-$WindowsFeatures = Get-WindowsFeature -ComputerName $Server -Credential (Get-Credential) -Name Web-*, Net-*
+$WindowsFeatures = Get-WindowsFeature -Name Web-*, Net-*
 
 # Funksjon for å sjekke og installere manglende funksjoner
 foreach ($feature in $RequiredFeatures) {
