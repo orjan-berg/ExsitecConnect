@@ -1,7 +1,6 @@
 $vbs_server = '192.168.50.45'
 $vbs_port = 2001
 $Server = $env:COMPUTERNAME
-$DeploymentConfigPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecConnect/a9c2f208f6bd41d7c4ce1c8614596f982fb16359/DeploymentConfigTemplate.xml'
 $FeaturesToInstallPath = 'https://raw.githubusercontent.com/orjan-berg/ExsitecConnect/refs/heads/main/FeaturesToInstall.csv'
 $appPoolName = 'ExsitecConnect'
 $SitePath = 'c:\inetpub'
@@ -20,11 +19,6 @@ function Write-LogMessage {
     Add-Content -Path $logFilePath -Value $logEntry
 }
 
-Write-LogMessage 'Laster ned DeploymentConfigTemplate.xml'
-$DeploymentConfigFile = Invoke-WebRequest $DeploymentConfigPath
-$DeploymentConfigFile.Content | Out-File '.\DeploymentConfigTemplate.xml'
-Write-LogMessage 'Nedlasting fullført'
-$DeploymentPath = '.\DeploymentConfigTemplate.xml'
 
 Write-LogMessage 'Laster ned FeaturesToInstall.csv'
 $FeaturesToInstallFile = Invoke-WebRequest $FeaturesToInstallPath
