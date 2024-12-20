@@ -37,9 +37,22 @@ if ($IIS.Installed) {
     Install-WindowsFeature -Name Web-Server -IncludeManagementTools -ComputerName $Server -Restart
 }
 
-Write-LogMessage 'Installerer nødvendige roles and features...'
-Install-WindowsFeature -ConfigurationFilePath $DeploymentPath -ComputerName $Server -Restart -Verbose
-Write-LogMessage 'Ferdig!'
+$RequiredFeatures = Import-Csv -Path '.\FeaturesToInstall.csv'
+
+$WindowsFeatures = Get-WindowsFeature -ComputerName $Server -Credential (Get-Credential) -Name Web-*, Net-*
+
+# Funksjon for å sjekke og installere manglende funksjoner
+foreach ($feature in $RequiredFeatures) {
+    $isInstalled = $WindowsFeatures | Where-Object { $_.Name -eq $feature -and $_.Installed -eq $true }
+
+    if (-not $isInstalled) {
+        Write-Host "Funksjonen $feature er ikke installert. Forsøker å installere..."
+        Install-WindowsFeature -Name $feature -IncludeManagementTools -ErrorAction Stop
+        Write-Host "Funksjonen $feature ble installert."
+    } else {
+        Write-Host "Funksjonen $feature er allerede installert."
+    }
+}
 
 # Import modules
 Import-Module IISAdministration
@@ -92,19 +105,3 @@ if ( $connection.TcpTestSucceeded) {
     Write-LogMessage 'Connection to VBS is NOT ok!'
 }
 
-$RequiredFeatures = Import-Csv -Path 'I:\ExsitecConnect\FeaturesToInstall.csv'
-
-$WindowsFeatures = Get-WindowsFeature -ComputerName $Server -Credential (Get-Credential) -Name Web-*, Net-*
-
-# Funksjon for å sjekke og installere manglende funksjoner
-foreach ($feature in $RequiredFeatures) {
-    $isInstalled = $WindowsFeatures | Where-Object { $_.Name -eq $feature -and $_.Installed -eq $true }
-
-    if (-not $isInstalled) {
-        Write-Host "Funksjonen $feature er ikke installert. Forsøker å installere..."
-        Install-WindowsFeature -Name $feature -IncludeManagementTools -ErrorAction Stop
-        Write-Host "Funksjonen $feature ble installert."
-    } else {
-        Write-Host "Funksjonen $feature er allerede installert."
-    }
-}
